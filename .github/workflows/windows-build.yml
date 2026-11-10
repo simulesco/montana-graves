@@ -1,0 +1,33 @@
+name: Build Montana Graves for Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'project.godot'
+      - 'scenes/**'
+      - 'scripts/**'
+      - 'export_presets.cfg'
+      - '.github/workflows/windows-build.yml'
+
+jobs:
+  export-windows:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import Godot project
+        run: godot --headless --editor --path . --quit
+      - name: Export Windows executable
+        run: |
+          mkdir -p build
+          godot --headless --path . --export-release "Windows Desktop" build/MontanaGraves.exe
+          test -s build/MontanaGraves.exe
+      - name: Upload Windows executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: MontanaGraves-Windows
+          path: build/MontanaGraves.exe
+          if-no-files-found: error
